@@ -71,6 +71,32 @@ func collectEmailData(email string) ([]byte, error) {
 		return nil, fmt.Errorf("unexpected status code: %d", resp.StatusCode)
 	}
 
+ switch resp.StatusCode {
+    case 200:
+        // OK — continue
+    case 400:
+        return nil, fmt.Errorf("bad request — invalid email")
+    case 401:
+        return nil, fmt.Errorf("unauthorized — API key required")
+    case 403:
+        return nil, fmt.Errorf("forbidden — blocked by API")
+    case 404:
+        return nil, fmt.Errorf("not found — no data for this email")
+    case 429:
+        return nil, fmt.Errorf("rate limited — slow down and try later")
+    case 500:
+        return nil, fmt.Errorf("server error on their side")
+    case 502:
+        return nil, fmt.Errorf("bad gateway — API may be down")
+    case 503:
+        return nil, fmt.Errorf("service unavailable — API is down, try later")
+    case 504:
+        return nil, fmt.Errorf("gateway timeout — API too slow")
+    default:
+        return nil, fmt.Errorf("unexpected status: %d", resp.StatusCode)
+    }
+
+
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, fmt.Errorf("error reading response body: %v", err)
@@ -175,6 +201,11 @@ func main() {
         fmt.Println("Collect error:", err)
         return
     }
+
+
+fmt.Println("=== RAW RESPONSE ===")
+fmt.Println(string(raw))
+fmt.Println("====================")
 
     // PARSE
     data, err := PareseEmailData(raw)
