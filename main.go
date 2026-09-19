@@ -160,3 +160,52 @@ func AnalyzeData(pro ProcessedData) Anal {
 
     return analysis
 }
+
+func display(analysis Anal) {
+    fmt.Println("Running breach scanner")
+    fmt.Println("==================================================")
+    fmt.Printf("Email:          %s\n", analysis.Email)
+    fmt.Printf("BreachCount:    %d\n", analysis.BreachCount)
+    fmt.Printf("ServiceCount:   %d\n", analysis.ServiceCount)
+    fmt.Printf("RiskScore:      %d\n", analysis.RiskScore)
+    fmt.Printf("RiskLevel:      %s\n", analysis.RiskLevel)
+    fmt.Printf("PasswordStatus: %s\n", analysis.PasswordStatus)
+    fmt.Println("Recommendations:")
+    for _, r := range analysis.Recommendations {
+        fmt.Printf("  - %s\n", r)
+    }
+}
+
+func main() {
+    fmt.Print("Enter email: ")
+    var email string
+    fmt.Scanln(&email)
+
+    if email == "" {
+        fmt.Println("❌ Email required")
+        return
+    }
+
+    // COLLECT
+    raw, err := collectEmailData(email)
+    if err != nil {
+        fmt.Println("Collect error:", err)
+        return
+    }
+
+    // PARSE
+    data, err := ParseEmailData(raw)
+    if err != nil {
+        fmt.Println("Parse error:", err)
+        return
+    }
+
+    // PROCESS
+    processed := processEmailData(data)
+
+    // ANALYZE
+    analysis := AnalyzeData(processed)
+
+    // DISPLAY
+    display(analysis)
+}
